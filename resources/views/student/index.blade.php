@@ -33,28 +33,32 @@
 
 						@foreach ($students as $student)
 						<tr>
-							<td>{{$student->id}}</td>
-							<td>{{$student->hoten}}</td>
-							<td>{{$student->gioitinh}}</td>
-							<td>{{$student->ngaysinh}}</td>
-							<td>{{$student->sdt}}</td>
-							<td>{{$student->diachi}}</td>
+							<td id="{{$student->id}}">{{$student->id}}</td>
+							<td id="hoten-{{$student->id}}">{{$student->hoten}}</td>
+							<td id="gioitinh-{{$student->id}}">{{$student->gioitinh}}</td>
+							<td id="ngaysinh-{{$student->id}}">{{$student->ngaysinh}}</td>
+							<td id="sdt-{{$student->id}}">{{$student->sdt}}</td>
+							<td id="diachi-{{$student->id}}">{{$student->diachi}}</td>
 							<td>
 								<button data-url="{{ route('studentajax.show',$student->id) }}"​ type="button" data-target="#show" data-toggle="modal" class="btn btn-info btn-show">Detail</button>
-								<button data-url="{{ route('studentajax.update',$student->id) }}"​ type="button" class="btn btn-warning btn-edit">Edit</button>
-								<button data-url="{{ route('studentajax.destroy',$student->id) }}"​ type="button" class="btn btn-danger btn-delete">Delete</button>
+								<button data-url="{{ route('studentajax.update',$student->id) }}"​ type="button" data-target="#edit" data-toggle="modal" class="btn btn-warning btn-edit">Edit</button>
+								<button data-url="{{ route('studentajax.destroy',$student->id) }}"​ type="button" data-target="#delete" data-toggle="modal" class="btn btn-danger btn-delete">Delete</button>
 							</td>
 						</tr>
 						@endforeach
 					</tbody>
 				</table>
 			</div>
-			{{$students->links()}}
+			{{-- {{$students->links()}} --}}
 		</div>
 
+		@include('student.add')
+		@include('student.detail')
+		@include('student.edit')
+
 		<script
-		  src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-		 ></script>
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+		></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js" type="text/javascript" charset="utf-8" async defer></script>
 		<script type="text/javascript" charset="utf-8">
@@ -64,9 +68,6 @@
 				}
 			});
 		</script>
-		@include('student.add')
-		@include('student.detail')
-		@include('student.edit')
 		<script type="text/javascript">
 			$(document).ready(function () {
 
@@ -87,12 +88,12 @@
 							diachi: $('#diachi-add').val(),
 						},
 						success: function(response) {
-							toastr.success('Add new student success!')
-							//ẩn modal add đi
+							toastr.success(response.message)
 							$('#modal-add').modal('hide');
-							setTimeout(function () {
-								window.location.href="{{ route('studentajax.index') }}";
-							},500);
+							console.log(response.data)
+							$('tbody').prepend('<tr><td id="'+response.data.id+'">'+response.data.id+'</td><td id="hoten-'+response.data.id+'">'+response.data.hoten+'</td><td id="gioitinh-'+response.data.id+'">'+response.data.gioitinh+'</td><td id="ngaysinh-'+response.data.id+'">'+response.data.ngaysinh+'</td><td id="sdt-'+response.data.id+'">'+response.data.sdt+'</td><td id="diachi-'+response.data.id+'">'+response.data.diachi+'</td><td><button data-url="{{asset('')}}studentajax/'+response.data.id+'"​ type="button" data-target="#show" data-toggle="modal" class="btn btn-info btn-show">Detail</button><button style="margin-left: 5px;" data-url="{{asset('')}}studentajax/'+response.data.id+'"​ type="button" data-target="#edit" data-toggle="modal" class="btn btn-warning btn-edit">Edit</button><button style="margin-left: 5px;" data-url="{{asset('')}}studentajax/'+response.data.id+'"​ type="button" data-target="#delete" data-toggle="modal" class="btn btn-danger btn-delete">Delete</button></td></tr>');
+
+							
 						},
 						error: function (jqXHR, textStatus, errorThrown) {
 							//xử lý lỗi tại đây
@@ -122,15 +123,18 @@
 						}
 					})
 				})
+				// _token: $('meta[name="_token"]').attr('content');
 
 				$('.btn-delete').click(function(){
 					var url = $(this).attr('data-url');
+					var _this = $(this);
 					if (confirm('May co chac muon xoa khong?')) {
 						$.ajax({
 							type: 'delete',
 							url: url,
 							success: function(response) {
-								window.location.reload()
+								toastr.success('Delete student success!')
+								_this.parent().parent().remove();
 							},
 							error: function (jqXHR, textStatus, errorThrown) {
 								//xử lý lỗi tại đây
@@ -169,7 +173,6 @@
 
 				$('#form-edit').submit(function(e){
 					e.preventDefault();
-
 					var url=$(this).attr('data-url');
 
 					$.ajax({
@@ -183,7 +186,14 @@
 							diachi: $('#diachi-edit').val(),
 						},
 						success: function(response) {
-							window.location.reload();
+							// console.log(response.studentid)
+							toastr.success(response.message)
+							$('#modal-edit').modal('hide');
+							$('#hoten-'+response.studentid).text(response.student.hoten)
+							$('#gioitinh-'+response.studentid).text(response.student.gioitinh)
+							$('#ngaysinh-'+response.studentid).text(response.student.ngaysinh)
+							$('#sdt-'+response.studentid).text(response.student.sdt)
+							$('#diachi-'+response.studentid).text(response.student.diachi)
 						},
 						error: function (jqXHR, textStatus, errorThrown) {
 							//xử lý lỗi tại đây

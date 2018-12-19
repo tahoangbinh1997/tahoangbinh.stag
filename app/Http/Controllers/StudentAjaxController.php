@@ -14,7 +14,7 @@ class StudentAjaxController extends Controller
      */
     public function index()
     {
-        $students = InfoStudent::orderBy('id','desc')->paginate(4);
+        $students = InfoStudent::orderBy('id','desc')->get();
 
         return view('student.index',[
             'students' => $students,
@@ -40,7 +40,10 @@ class StudentAjaxController extends Controller
     public function store(Request $request)
     {
         $student=InfoStudent::create($request->all());
-        return response()->json(['data'=>$student,'name'=>'Bình'],200); // 200 là mã lỗi
+        return response()->json([
+            'data'=>$student,
+            'message'=>'Tạo sinh viên thành công'
+        ],200); // 200 là mã lỗi
     }
 
     /**
@@ -77,7 +80,7 @@ class StudentAjaxController extends Controller
     public function update(Request $request, $id)
     {
         $student=InfoStudent::find($id)->update($request->all());
-        return response()->json(['data'=>$student],200);
+        return response()->json(['data'=>$student,'student' => $request->all(),'studentid' => $id,'message'=>'Cập nhật thông tin sinh viên thành công'],200);
     }
 
     /**
